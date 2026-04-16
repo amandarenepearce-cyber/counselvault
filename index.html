@@ -10,7 +10,8 @@
       --accent:#1d4ed8; --danger:#b91c1c; --warn:#92400e; --success:#166534;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    html,body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    body.modal-open{overflow:hidden}
     .wrap{max-width:1400px;margin:0 auto;padding:24px}
     .header,.space,.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
     .header{justify-content:space-between;align-items:flex-start;margin-bottom:24px}
@@ -41,28 +42,32 @@
     .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
     .tab{padding:10px 14px;border-radius:14px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
     .tab.active{border-color:var(--accent);color:var(--accent)}
-    .hidden{display:none}
+    .hidden{display:none !important}
     .item{padding:14px;border:1px solid var(--border);border-radius:16px;background:#fff}
     .kvgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
     .kv{padding:12px;border-radius:14px;border:1px solid var(--border);background:#fafafa}
     .check{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:#fff}
     .notice{padding:12px 14px;border-radius:14px;background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a;font-size:14px}
-    .login{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
-    .loginCard{max-width:460px;width:100%}
+    .overlay{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow:auto}
+    .dialog{max-width:760px;width:100%;margin:auto}
+    .dialog .card{max-height:calc(100vh - 40px);overflow:auto}
+    .stickyActions{position:sticky;bottom:-18px;background:#fff;padding-top:12px}
     .pillGroup{display:flex;gap:8px;flex-wrap:wrap}
     .divider{height:1px;background:var(--border);margin:10px 0}
     @media (max-width:980px){.metrics,.main,.split,.kvgrid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-<div id="login" class="login">
-  <div class="card loginCard">
-    <h1 class="title" style="font-size:28px">CounselVault</h1>
-    <p class="sub" style="margin-bottom:18px">Git and Vercel ready version. This stores data in each browser unless you later add a shared database.</p>
-    <div class="stack">
-      <div><label>Staff email</label><input id="loginEmail" class="input" value="staff@counselvault.local"></div>
-      <div><label>Password</label><input id="loginPassword" class="input" type="password" value="password123"></div>
-      <button class="btn btnPrimary" onclick="enterApp()">Open CounselVault</button>
+<div id="login" class="overlay">
+  <div class="dialog">
+    <div class="card">
+      <h1 class="title" style="font-size:28px">CounselVault</h1>
+      <p class="sub" style="margin-bottom:18px">Git and Vercel ready version. This stores data in each browser unless you later add a shared database.</p>
+      <div class="stack">
+        <div><label>Staff email</label><input id="loginEmail" class="input" value="staff@counselvault.local"></div>
+        <div><label>Password</label><input id="loginPassword" class="input" type="password" value="password123"></div>
+        <button class="btn btnPrimary" onclick="enterApp()">Open CounselVault</button>
+      </div>
     </div>
   </div>
 </div>
@@ -154,44 +159,48 @@
   </div>
 </div>
 
-<div id="intakeModal" class="login hidden">
-  <div class="card loginCard" style="max-width:760px">
-    <div class="space" style="justify-content:space-between">
-      <h2 class="section">New Intake / Matter</h2>
-      <button class="btn" onclick="closeIntake()">Close</button>
-    </div>
-    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
-      <div><label>Client first name</label><input id="fFirst" class="input"></div>
-      <div><label>Client last name</label><input id="fLast" class="input"></div>
-      <div><label>Phone</label><input id="fPhone" class="input"></div>
-      <div><label>Email</label><input id="fEmail" class="input"></div>
-      <div><label>Matter title</label><input id="fTitle" class="input" placeholder="Traffic matter"></div>
-      <div><label>Case number</label><input id="fCase" class="input"></div>
-      <div><label>Court</label><input id="fCourt" class="input"></div>
-      <div><label>Division</label><input id="fDivision" class="input"></div>
-      <div><label>Assigned attorney</label><input id="fAttorney" class="input"></div>
-      <div><label>Next court date</label><input id="fNextDate" class="input" placeholder="2026-05-10 9:00 AM"></div>
-      <div><label>Status</label>
-        <select id="fStatus" class="select">
-          <option>Hearing Scheduled</option>
-          <option>Continued</option>
-          <option>Trial Set</option>
-          <option>Plea Pending</option>
-          <option>Resolved</option>
-        </select>
+<div id="intakeModal" class="overlay hidden" onclick="overlayClose(event)">
+  <div class="dialog">
+    <div class="card" onclick="event.stopPropagation()">
+      <div class="space" style="justify-content:space-between;position:sticky;top:-18px;background:#fff;padding-bottom:12px;z-index:2">
+        <h2 class="section">New Intake / Matter</h2>
+        <button class="btn" type="button" onclick="closeIntake()">Close</button>
       </div>
-      <div><label>Charges (comma separated)</label><input id="fCharges" class="input" placeholder="Speeding, No insurance"></div>
-      <div style="grid-column:1 / -1"><label>Summary / intake notes</label><textarea id="fSummary"></textarea></div>
-    </div>
-    <div class="row" style="margin-top:16px;justify-content:flex-end">
-      <button class="btn" onclick="closeIntake()">Cancel</button>
-      <button class="btn btnPrimary" onclick="saveIntake()">Save Matter</button>
+      <form onsubmit="saveIntake(event)">
+        <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
+          <div><label>Client first name</label><input id="fFirst" class="input"></div>
+          <div><label>Client last name</label><input id="fLast" class="input"></div>
+          <div><label>Phone</label><input id="fPhone" class="input"></div>
+          <div><label>Email</label><input id="fEmail" class="input"></div>
+          <div><label>Matter title</label><input id="fTitle" class="input" placeholder="Traffic matter"></div>
+          <div><label>Case number</label><input id="fCase" class="input"></div>
+          <div><label>Court</label><input id="fCourt" class="input"></div>
+          <div><label>Division</label><input id="fDivision" class="input"></div>
+          <div><label>Assigned attorney</label><input id="fAttorney" class="input"></div>
+          <div><label>Next court date</label><input id="fNextDate" class="input" placeholder="2026-05-10 9:00 AM"></div>
+          <div><label>Status</label>
+            <select id="fStatus" class="select">
+              <option>Hearing Scheduled</option>
+              <option>Continued</option>
+              <option>Trial Set</option>
+              <option>Plea Pending</option>
+              <option>Resolved</option>
+            </select>
+          </div>
+          <div><label>Charges (comma separated)</label><input id="fCharges" class="input" placeholder="Speeding, No insurance"></div>
+          <div style="grid-column:1 / -1"><label>Summary / intake notes</label><textarea id="fSummary"></textarea></div>
+        </div>
+        <div class="row stickyActions" style="justify-content:flex-end">
+          <button class="btn" type="button" onclick="closeIntake()">Cancel</button>
+          <button class="btn btnPrimary" type="submit">Save Matter</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
 <script>
-const STORAGE_KEY = "counselvault_git_vercel_ready_v1";
+const STORAGE_KEY = "counselvault_git_vercel_ready_fixed_v1";
 function cryptoRandom() { return "M-" + Math.random().toString(36).slice(2, 10).toUpperCase(); }
 
 const seedMatters = [
@@ -254,7 +263,7 @@ function badge(status) {
   if (status === "Resolved") return "badge success";
   return "badge";
 }
-function enterApp() { document.getElementById("login").classList.add("hidden"); }
+function enterApp() { document.getElementById("login").classList.add("hidden"); document.body.classList.remove("modal-open"); }
 
 function render() {
   renderMetrics();
@@ -382,13 +391,23 @@ function showTab(name) {
   document.getElementById("tab-" + name).classList.remove("hidden");
   document.getElementById("tabBtn-" + name).classList.add("active");
 }
-function openIntake() { document.getElementById("intakeModal").classList.remove("hidden"); }
-function closeIntake() { document.getElementById("intakeModal").classList.add("hidden"); }
+function openIntake() {
+  document.getElementById("intakeModal").classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+function closeIntake() {
+  document.getElementById("intakeModal").classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+function overlayClose(event) {
+  if (event.target.id === "intakeModal") closeIntake();
+}
 function val(id) { return document.getElementById(id).value.trim(); }
 
-function saveIntake() {
+function saveIntake(event) {
+  if (event) event.preventDefault();
   const first = val("fFirst"), last = val("fLast");
-  if (!first || !last) { alert("Please enter first and last name."); return; }
+  if (!first || !last) { alert("Please enter first and last name."); return false; }
   const matter = {
     id: cryptoRandom(),
     clientName: (first + " " + last).trim(),
@@ -415,6 +434,7 @@ function saveIntake() {
   closeIntake();
   clearIntake();
   render();
+  return false;
 }
 function clearIntake() {
   ["fFirst","fLast","fPhone","fEmail","fTitle","fCase","fCourt","fDivision","fAttorney","fNextDate","fCharges","fSummary"].forEach(id => document.getElementById(id).value = "");
@@ -478,6 +498,13 @@ function restoreData(event) {
 function escapeHtml(str) { return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 function escapeHtmlText(str) { return String(str).replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function escapeAttr(str) { return String(str).replace(/"/g, "&quot;"); }
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    if (!document.getElementById("intakeModal").classList.contains("hidden")) closeIntake();
+    if (!document.getElementById("login").classList.contains("hidden")) enterApp();
+  }
+});
 
 render();
 showTab("overview");
